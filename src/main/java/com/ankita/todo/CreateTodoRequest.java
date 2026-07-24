@@ -1,5 +1,9 @@
 package com.ankita.todo;
 
-public record CreateTodoRequest(String title) {
+import jakarta.validation.constraints.NotBlank;
+
+public record CreateTodoRequest(
+		@NotBlank String title
+) {
 
 }

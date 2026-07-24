@@ -15,6 +15,8 @@ import com.ankita.todo.CreateTodoRequest;
 import com.ankita.todo.Todo;
 import com.ankita.todo.service.TodoService;
 
+import jakarta.validation.Valid;
+
 // imports: TodoService, Todo, List, and the web annotations
 // (Ctrl+Shift+O will pull most of these in — accept the org.springframework.web.bind.annotation ones)
 
@@ -37,7 +39,7 @@ public class TodoController {
 
     // POST /api/todos  → create one
     @PostMapping
-    public Todo create(@RequestBody CreateTodoRequest todo) {
+    public Todo create(@Valid @RequestBody CreateTodoRequest todo) {
         // call the service's create method, passing the title out of the incoming todo
         // (use the record accessor for title)
     	return service.create(todo.title());
