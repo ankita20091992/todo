@@ -1,53 +1,66 @@
 package com.ankita.todo.service;
 
-import java.util.ArrayList;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
+import java.util.NoSuchElementException;
+
 import org.springframework.stereotype.Service;
+
 import com.ankita.todo.Todo;
+import com.ankita.todo.TodoEntity;
+import com.ankita.todo.TodoRepository;
 @Service
 public class TodoService {
 
-    private final List<Todo> todos = new ArrayList<>();
-    private long counter = 0;
-
+    //private final List<Todo> todos = new ArrayList<>();
+    //private long counter = 0;
+	private final TodoRepository repo;
+	public TodoService(TodoRepository repo) {
+		this.repo= repo;
+		}
+	//convert a database entity into API record
+	private Todo toDto(TodoEntity e) {
+		return new Todo(e.getId(), e.getTitle(), e.isCompleted(),
+				e.getCreatedDate(), e.getDueDate());
+	}
     // 1. list all
     public List<Todo> findAll() {
-        // return the list
-    	return todos;
+        //repo.findAll() returns List<TodoEntity>
+    	//convert each entity to a Todo. Use stream or List<Todo>
+    	return repo.findAll().stream().map(this::toDto).toList();
     }
 
     // 2. create from a title
-    public Todo create(String title) {
-        // increment counter, build a new Todo with that id + title + false,
-        counter++;
-        Todo newTask = new Todo(counter, title, false);
-    	// add it to the list, return it
-        todos.add(newTask);
-        return newTask;
+    public Todo create(String title, LocalDate dueDate) {
+    	TodoEntity entity = new TodoEntity(title, false);
+    	entity.setCreatedDate(LocalDateTime.now());
+    	entity.setDueDate(dueDate);
+    	TodoEntity saved = repo.save(entity);
+    	return toDto(saved);
     }
-
+    
     // 3. toggle done/undone by id
     public void toggle(Long id) {
-        // find the matching Todo in the list (loop, or indexed loop),
-    	for(int i = 0; i < todos.size(); i++) {
-    		// build a replacement Todo with the opposite 'completed',
-    		Todo current = todos.get(i);
-    		// put the replacement back in the same position
-    		if (current.id().equals(id)) {
-    			// build a replacement with completed flipped, 
-    			Todo replacement = new Todo(current.id(), current.title(), 
-    					!current.completed());
-    			//then todos.set(i, replacement); then stop
-    			todos.set(i, replacement);
-    			return;
-    		}
-    	}   
+        //repo.findById(id) returns an Optional<TodoEntity>
+    	//get the entity
+    	//or throw NoSuchElementException if absent),
+    	//flip its completed with setCompleted(!e.isCompleted())
+    	TodoEntity e = repo.findById(id)
+    			.orElseThrow(() -> new NoSuchElementException("Todo not found: " + id));
+    	e.setCompleted(!e.isCompleted());
+    	//then repo.save(e) to persist the change
+    	repo.save(e);
     }
 
     // 4. delete by id
     public void delete(Long id) {
-        // remove the Todo whose id matches
-    	todos.removeIf(t -> t.id().equals(id));
+        //if repo.existsById(id) is false, throw NoSuchElementException
+    	if(!repo.existsById(id)) {
+    		throw new NoSuchElementException("Todo not found: " +id);
+    	}
+    	//otherwise repo.deleteById(id)
+    	repo.deleteById(id);
     }
 }
 //findAll — right.

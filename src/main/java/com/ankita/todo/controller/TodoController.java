@@ -42,7 +42,7 @@ public class TodoController {
     public Todo create(@Valid @RequestBody CreateTodoRequest todo) {
         // call the service's create method, passing the title out of the incoming todo
         // (use the record accessor for title)
-    	return service.create(todo.title());
+    	return service.create(todo.title(), todo.dueDate());
     }
 
     // PUT /api/todos/{id}  → toggle done
