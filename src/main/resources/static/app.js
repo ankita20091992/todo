@@ -1,6 +1,7 @@
 const taskInput = document.getElementById("taskInput");
 const addBtn = document.getElementById("addBtn");
 const taskList = document.getElementById("taskList");
+const dueDateInput = document.getElementById("dueDateInput");
 
 async function loadTasks() {
 	//GET is default
@@ -19,6 +20,12 @@ async function loadTasks() {
 		checkbox.onclick = () => toggleTask(task.id); //on click, toggle THIS 
 		//3. make text span for title
 		const text = document.createElement("span");
+		const due = document.createElement("span");
+		if(task.dueDate) {
+			due.textContent = " (due: " + task.dueDate + ")";
+		} else {
+			due.textContent = "";
+		}
 		text.textContent = task.title; //put the task's title text in it
 		//4. make delete button
 		const deleteBtn = document.createElement("button");
@@ -27,6 +34,7 @@ async function loadTasks() {
 		//5. put all three pieces inside the <li>
 		li.appendChild(checkbox);
 		li.appendChild(text);
+		li.appendChild(due);
 		li.appendChild(deleteBtn);
 		if (task.completed) {
 			li.classList.add("completed");
@@ -37,13 +45,15 @@ async function loadTasks() {
 }
 async function addTask() {
 	const title = taskInput.value;
+	const dueDate = dueDateInput.value;
 	if (title === "") { return; }
 	await fetch("/api/todos", {
 		method: "POST",
 		headers: { "Content-Type": "application/json" },
-		body: JSON.stringify({ title: title })
+		body: JSON.stringify({ title: title, dueDate: dueDate || null })
 	});
 	taskInput.value = ""; //clear the box
+	dueDateInput.value = "";
 	loadTasks(); //redraw with the new task
 	}
 async function toggleTask(id) {
